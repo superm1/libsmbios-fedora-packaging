@@ -18,7 +18,7 @@
 # START = Do not edit manually
 %define major 0
 %define minor 13
-%define sub 2
+%define sub 4
 %define extralevel %{nil}
 %define release_name libsmbios
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -170,6 +170,7 @@ rm -f %{buildroot}/%{_libdir}/lib*.la
 %{_bindir}/verifySmiPassword
 %{_bindir}/wakeupCtl
 %{_bindir}/dellLcdBrightness
+%{_bindir}/dellWirelessCtl
 
 %files unsupported-bin 
 %defattr(-,root,root)
@@ -189,6 +190,24 @@ rm -f %{buildroot}/%{_libdir}/lib*.la
 #%{_bindir}/sysid
 
 %changelog
+* Mon Mar 12 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.4-1
+- Added dellWirelessCtl binary
+- Added 'static' makefile target to build static binaries and clean them as well
+- fix for signed/unsigned bug in probes binary. CPU temp misreported
+- simplify interface for DELL_CALLING_INTERFACE_SMI, autodetect Port/Magic
+- document all of the tokens for controlling wireless on dell notebooks
+- enums for SMI args/res to make code match docs better (cbRES1 = res[0], which 
+  was confusing.
+- helper functions isTokenActive() and activateToken() to simplify token API.
+- Added missing windows .cpp files to the dist tarball for those who compile 
+  windows from dist tarball vs source control
+- Add support for EFI based machines without backwards compatible smbios table
+  entry point in 0xF0000 block.
+- Added wirelessSwitchControl() and wirelessRadioControl() API for newer 
+  laptops.
+- fixed bug in TokenDA activate() code where it wasnt properly using SMI 
+  (never worked, but apparently wasnt used until now.)
+
 * Tue Sep 26 2006 Michael E Brown <michael_e_brown at dell.com> - 0.12.4-1
 - Changes per Fedora Packaging Guidelines to prepare to submit to Extras.
 - Add in a changelog entry per Fedora Packaging Guidelines...
