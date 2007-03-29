@@ -1,14 +1,9 @@
 # automatically determine if we should build docs based on presence of doxygen
-#%define build_docs %( ( which doxygen > /dev/null 2>&1 && echo 1) || echo 0 )
-# comment out docs until automake has been taught how to build them.
-%define build_docs 0
+%define build_docs %( ( which doxygen > /dev/null 2>&1 && echo 1) || echo 0 )
 
 # automatically determine if we should run cppunit based on presence or
 # absense of cppunit include files.
 %define run_cppunit %( ([ -e /usr/include/cppunit ] && echo 1) || echo 0)
-
-# Some SUSE stuff is different
-%define is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
 
 ###################################################################
 #
@@ -18,7 +13,7 @@
 # START = Do not edit manually
 %define major 0
 %define minor 13
-%define sub 4
+%define sub 5
 %define extralevel %{nil}
 %define release_name libsmbios
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -37,7 +32,7 @@
 Name: %{release_name}
 Version: %{release_version}
 Release: 1%{?dist}
-License: GPL/OSL Dual License
+License: GPL style
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/%{name}/%{name}-%{version}/%{name}-%{version}.tar.gz
 URL: http://linux.dell.com/libsmbios/main
@@ -49,10 +44,17 @@ Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 ExclusiveArch: x86_64 ia64 %{ix86}
 
 BuildRequires: libxml2-devel
+
+#EPEL4/5 dont have cppunit/cppunit-devel, so skip build tests
+# everything else should be able to pull in cppunit to run unit tests
+# during build. Doesnt affect binaries produced, so doesnt affect
+# build reproducability.
+%if %(test "%{dist}" != ".el4" -a "%{dist}" != ".el5" && echo 1 || echo 0)
 BuildRequires: cppunit-devel
-%if %{is_suse}
+%endif
+
 # no doxygen native for suse
-%else
+%if %(test ! -e /etc/SuSE-release && echo 1 || echo 0)
 BuildRequires: doxygen
 %endif
 
@@ -63,16 +65,16 @@ to get information from standard BIOS tables, such as the SMBIOS table.
 %package libs
 Summary: Libsmbios shared libraries
 Group: System Environment/Libraries
-Obsoletes: libsmbiosxml-libs
-Provides: libsmbiosxml-libs
+Obsoletes: libsmbiosxml-libs < 0:%{version}-%{release}
+Provides: libsmbiosxml-libs = %{version}-%{release}
 
 
 %package bin
 Summary: The "supported" sample binaries that use libsmbios
 Group: Applications/System
 Requires: libsmbios-libs = %{version}-%{release}
-Obsoletes: libsmbiosxml-bin
-Provides: libsmbiosxml-bin
+Obsoletes: libsmbiosxml-bin < 0:%{version}-%{release}
+Provides: libsmbiosxml-bin = %{version}-%{release}
 
 %package unsupported-bin
 Summary: Unsupported sample binaries using libsmbios
@@ -93,7 +95,7 @@ Libsmbios is a library and utilities that can be used by client programs
 to get information from standard BIOS tables, such as the SMBIOS table.
 
 This package contains the headers and .a files necessary to compile new 
-client programs against libsmbios
+client programs against libsmbios.
 
 %description bin
 Libsmbios is a library and utilities that can be used by client programs 
@@ -108,9 +110,9 @@ to get information from standard BIOS tables, such as the SMBIOS table.
 This package contains some sample binaries that use libsmbios.
 
 %prep
-%setup 
+%setup -q 
 find . -type d -exec chmod -f 755 {} \;
-find doc include libraries bins build supported-bins cppunit -type f -exec chmod -f 644 {} \;
+find doc include libraries bin-unsupported build bin-supported cppunit -type f -exec chmod -f 644 {} \;
 
 %build
 %configure
@@ -131,27 +133,25 @@ cp -a include/smbios %{buildroot}/usr/include/
 rm -f %{buildroot}/%{_libdir}/lib*.la
 
 %clean
-[ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
+rm -rf %{buildroot}
 
 %post libs -p /sbin/ldconfig
 %postun libs -p /sbin/ldconfig
 
 %files libs
-%defattr(-,root,root)
+%defattr(-,root,root,-)
 %doc COPYING-GPL COPYING-OSL README
-%{_libdir}/libsmbios.so.*.*
-%{_libdir}/libsmbiosxml.so.*.*
+%{_libdir}/libsmbios.so.*
+%{_libdir}/libsmbiosxml.so.*
 
 %files devel
-%defattr(-,root,root)
-%doc COPYING-GPL COPYING-OSL README bins/getopts_LICENSE.txt
+%defattr(-,root,root,-)
+%doc COPYING-GPL COPYING-OSL README bin-unsupported/getopts_LICENSE.txt
 /usr/include/smbios
 %{_libdir}/libsmbios.a
 %{_libdir}/libsmbios.so
-%{_libdir}/libsmbios.so.1
 %{_libdir}/libsmbiosxml.a
 %{_libdir}/libsmbiosxml.so
-%{_libdir}/libsmbiosxml.so.1
 
 %if %{build_docs}
     %doc doc/full/html
@@ -159,8 +159,8 @@ rm -f %{buildroot}/%{_libdir}/lib*.la
 
 
 %files bin 
-%defattr(-,root,root)
-%doc COPYING-GPL COPYING-OSL README bins/getopts_LICENSE.txt
+%defattr(-,root,root,-)
+%doc COPYING-GPL COPYING-OSL README bin-unsupported/getopts_LICENSE.txt
 %{_bindir}/assetTag
 %{_bindir}/dellBiosUpdate
 %{_bindir}/getSystemId
@@ -173,8 +173,9 @@ rm -f %{buildroot}/%{_libdir}/lib*.la
 %{_bindir}/dellWirelessCtl
 
 %files unsupported-bin 
-%defattr(-,root,root)
-%doc COPYING-GPL COPYING-OSL README include/smbios/config/boost_LICENSE_1_0_txt bins/getopts_LICENSE.txt
+%defattr(-,root,root,-)
+%doc COPYING-GPL COPYING-OSL README include/smbios/config/boost_LICENSE_1_0_txt bin-unsupported/getopts_LICENSE.txt
+%{_bindir}/dellLEDCtl
 %{_bindir}/activateCmosToken
 %{_bindir}/ascii2enUS_scancode
 %{_bindir}/createUnitTestFiles
@@ -190,6 +191,14 @@ rm -f %{buildroot}/%{_libdir}/lib*.la
 #%{_bindir}/sysid
 
 %changelog
+* Tue Mar 20 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.5
+- rpmlint cleanups
+- Add dellLEDCtl binary
+- update AUTHORS file to add credit for dellLEDCtl
+- update doc/DellToken.txt to add a few more useful tokens.
+- updated build system to create documentation
+- skip cppunit dep on .elX builds (not in EPEL yet)
+
 * Mon Mar 12 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.4-1
 - Added dellWirelessCtl binary
 - Added 'static' makefile target to build static binaries and clean them as well
