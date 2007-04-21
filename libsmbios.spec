@@ -1,10 +1,3 @@
-# automatically determine if we should build docs based on presence of doxygen
-%define build_docs %( ( which doxygen > /dev/null 2>&1 && echo 1) || echo 0 )
-
-# automatically determine if we should run cppunit based on presence or
-# absense of cppunit include files.
-%define run_cppunit %( ([ -e /usr/include/cppunit ] && echo 1) || echo 0)
-
 ###################################################################
 #
 # WARNING
@@ -13,7 +6,7 @@
 # START = Do not edit manually
 %define major 0
 %define minor 13
-%define sub 5
+%define sub 6
 %define extralevel %{nil}
 %define release_name libsmbios
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -21,13 +14,6 @@
 # END = Do not edit manually
 #
 ###################################################################
-
-# allow --with[out] <feature> at rpm command line build, to override the above
-# e.g. --with docs    ...or...   --without docs 
-%{?_without_docs: %{expand: %%define build_docs 0}}
-%{?_with_docs: %{expand: %%define build_docs 1}}
-%{?_without_cppunit: %{expand: %%define run_cppunit 0}}
-%{?_with_cppunit: %{expand: %%define run_cppunit 1}}
 
 Name: %{release_name}
 Version: %{release_version}
@@ -113,16 +99,19 @@ This package contains some sample binaries that use libsmbios.
 %setup -q 
 find . -type d -exec chmod -f 755 {} \;
 find doc include libraries bin-unsupported build bin-supported cppunit -type f -exec chmod -f 644 {} \;
+chmod 755 cppunit/*.sh
 
 %build
 %configure
-make %{?_smp_mflags} EXTRA_CXXFLAGS="%{optflags}" EXTRA_CFLAGS="%{optflags}" -e RELEASE_MAJOR=%{major} RELEASE_MINOR=%{minor} RELEASE_SUBLEVEL=%{sub} RELEASE_EXTRALEVEL=%{extralevel}
-%if %{build_docs}
-    make -e RELEASE_MAJOR=%{major} RELEASE_MINOR=%{minor} RELEASE_SUBLEVEL=%{sub} RELEASE_EXTRALEVEL=%{extralevel} doxygen
-%endif
-%if %{run_cppunit}
-    make -e EXTRA_CXXFLAGS="%{optflags}" EXTRA_CFLAGS="%{optflags}" RELEASE_MAJOR=%{major} RELEASE_MINOR=%{minor} RELEASE_SUBLEVEL=%{sub} RELEASE_EXTRALEVEL=%{extralevel} unit_test
-%endif
+export EXTRA_CXXFLAGS="%{optflags}" 
+export EXTRA_CFLAGS="%{optflags}" 
+export RELEASE_MAJOR=%{major} 
+export RELEASE_MINOR=%{minor} 
+export RELEASE_SUBLEVEL=%{sub} 
+export RELEASE_EXTRALEVEL=%{extralevel}
+mkdir -p doc/full/html 
+make -e %{?_smp_mflags} 
+[ ! -d /usr/include/cppunit ] || make -e check
 
 %install
 [ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
@@ -152,11 +141,7 @@ rm -rf %{buildroot}
 %{_libdir}/libsmbios.so
 %{_libdir}/libsmbiosxml.a
 %{_libdir}/libsmbiosxml.so
-
-%if %{build_docs}
-    %doc doc/full/html
-%endif
-
+%doc doc/full/html
 
 %files bin 
 %defattr(-,root,root,-)
@@ -191,6 +176,20 @@ rm -rf %{buildroot}
 #%{_bindir}/sysid
 
 %changelog
+* Tue Apr 3 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.6
+- critical bugfix to dellBiosUpdate utility to fix packet mode
+- autoconf/automake support for automatically building docs
+- more readable 'make' lines by splitting out env vars
+- remove run_cppunit option... always run unit tests.
+- update autoconf/automake utilities to latest version
+- fix LDFLAGS to not overwrite user entered LDFLAGS
+- add automatic doxygen build of docs
+- fix urls of public repos
+- remove yum repo page in favor of official page from docs
+- split dmi table entry point from smbios table entry point
+- support legacy _DMI_ tables
+- fix support for EFI-based imacs without proper _SM_ anchor
+
 * Tue Mar 20 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.5
 - rpmlint cleanups
 - Add dellLEDCtl binary
