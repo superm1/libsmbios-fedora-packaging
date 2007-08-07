@@ -1,19 +1,10 @@
-###################################################################
-#
-# WARNING
-#
-# These are all automatically replaced by the release script.
-# START = Do not edit manually
+# these are all substituted by autoconf
 %define major 0
 %define minor 13
-%define sub 6
+%define sub 8
 %define extralevel %{nil}
 %define release_name libsmbios
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
-#
-# END = Do not edit manually
-#
-###################################################################
 
 Name: %{release_name}
 Version: %{release_version}
@@ -102,13 +93,13 @@ find doc include libraries bin-unsupported build bin-supported cppunit -type f -
 chmod 755 cppunit/*.sh
 
 %build
-%configure
 export EXTRA_CXXFLAGS="%{optflags}" 
 export EXTRA_CFLAGS="%{optflags}" 
 export RELEASE_MAJOR=%{major} 
 export RELEASE_MINOR=%{minor} 
 export RELEASE_SUBLEVEL=%{sub} 
 export RELEASE_EXTRALEVEL=%{extralevel}
+%configure
 mkdir -p doc/full/html 
 make -e %{?_smp_mflags} 
 [ ! -d /usr/include/cppunit ] || make -e check
@@ -175,9 +166,13 @@ rm -rf %{buildroot}
 %{_bindir}/dumpSmbios
 #%{_bindir}/sysid
 
+# ./ChangeLog is appended by configure
 %changelog
+* Tue Aug 6 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.8
+- new upstream
+
 * Tue Apr 3 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.6
-- critical bugfix to dellBiosUpdate utility to fix packet mode
+- critical bugfix for dellBiosUpdate utility for packet mode
 - autoconf/automake support for automatically building docs
 - more readable 'make' lines by splitting out env vars
 - remove run_cppunit option... always run unit tests.
@@ -216,6 +211,11 @@ rm -rf %{buildroot}
 - fixed bug in TokenDA activate() code where it wasnt properly using SMI 
   (never worked, but apparently wasnt used until now.)
 
+* Tue Oct 3 2006 Michael E Brown <Michael_E_Brown@Dell.com> - 0.13.0-1
+- autotools conversion
+- add Changelog
+
 * Tue Sep 26 2006 Michael E Brown <michael_e_brown at dell.com> - 0.12.4-1
 - Changes per Fedora Packaging Guidelines to prepare to submit to Extras.
 - Add in a changelog entry per Fedora Packaging Guidelines...
+
