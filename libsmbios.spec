@@ -1,7 +1,7 @@
 # these are all substituted by autoconf
 %define major 0
 %define minor 13
-%define sub 8
+%define sub 9
 %define extralevel %{nil}
 %define release_name libsmbios
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -9,7 +9,7 @@
 Name: %{release_name}
 Version: %{release_version}
 Release: 1%{?dist}
-License: GPL style
+License: GPLv2+ or OSL
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/%{name}/%{name}-%{version}/%{name}-%{version}.tar.gz
 URL: http://linux.dell.com/libsmbios/main
@@ -168,6 +168,9 @@ rm -rf %{buildroot}
 
 # ./ChangeLog is appended by configure
 %changelog
+* Wed Aug 22 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.9
+- new upstream
+
 * Tue Aug 6 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.8
 - new upstream
 
