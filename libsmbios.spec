@@ -1,7 +1,7 @@
 # these are all substituted by autoconf
 %define major 0
 %define minor 13
-%define sub 9
+%define sub 10
 %define extralevel %{nil}
 %define release_name libsmbios
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -168,8 +168,15 @@ rm -rf %{buildroot}
 
 # ./ChangeLog is appended by configure
 %changelog
+* Mon Aug 28 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.10-1
+- Fix one instance where return code to fread was incorrectly checked.
+
 * Wed Aug 22 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.9
-- new upstream
+- Fix a couple of failure-to-check-return on fread. most were unit-test code
+  only, but two or three were in regular code.
+- Add hinting to the memory class, so that it can intelligently close /dev/mem
+  file handle when it is not needed (which is most of the time). it only
+  leaves it open when it is scanning, so speed is not impacted.
 
 * Tue Aug 6 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.8
 - new upstream
