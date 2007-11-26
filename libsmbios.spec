@@ -1,7 +1,7 @@
 # these are all substituted by autoconf
 %define major 0
 %define minor 13
-%define sub 10
+%define sub 13
 %define extralevel %{nil}
 %define release_name libsmbios
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -43,6 +43,7 @@ to get information from standard BIOS tables, such as the SMBIOS table.
 Summary: Libsmbios shared libraries
 Group: System Environment/Libraries
 Obsoletes: libsmbiosxml-libs < 0:%{version}-%{release}
+Obsoletes: libsmbios < 0:%{version}-%{release}
 Provides: libsmbiosxml-libs = %{version}-%{release}
 
 
@@ -52,6 +53,7 @@ Group: Applications/System
 Requires: libsmbios-libs = %{version}-%{release}
 Obsoletes: libsmbiosxml-bin < 0:%{version}-%{release}
 Provides: libsmbiosxml-bin = %{version}-%{release}
+Obsoletes: smbios-utils < 0:%{version}-%{release}
 
 %package unsupported-bin
 Summary: Unsupported sample binaries using libsmbios
@@ -107,10 +109,16 @@ make -e %{?_smp_mflags}
 %install
 [ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
 
-make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot} INSTALL="%{__install} -p"
 mkdir -p %{buildroot}/usr/include
 cp -a include/smbios %{buildroot}/usr/include/
 rm -f %{buildroot}/%{_libdir}/lib*.la
+find %{buildroot}/usr/include -exec touch -r configure.ac {} \;
+find doc/full -exec touch -r configure.ac {} \;
+
+# backwards compatible:
+ln -s /usr/sbin/dellWirelessCtl %{buildroot}/usr/bin/dellWirelessCtl
+
 
 %clean
 rm -rf %{buildroot}
@@ -132,47 +140,52 @@ rm -rf %{buildroot}
 %{_libdir}/libsmbios.so
 %{_libdir}/libsmbiosxml.a
 %{_libdir}/libsmbiosxml.so
-%doc doc/full/html
 
 %files bin 
 %defattr(-,root,root,-)
 %doc COPYING-GPL COPYING-OSL README bin-unsupported/getopts_LICENSE.txt
-%{_bindir}/assetTag
-%{_bindir}/dellBiosUpdate
-%{_bindir}/getSystemId
-%{_bindir}/propertyTag
-%{_bindir}/serviceTag
-%{_bindir}/tokenCtl
-%{_bindir}/verifySmiPassword
-%{_bindir}/wakeupCtl
-%{_bindir}/dellLcdBrightness
+%{_sbindir}/assetTag
+%{_sbindir}/dellBiosUpdate
+%{_sbindir}/getSystemId
+%{_sbindir}/propertyTag
+%{_sbindir}/serviceTag
+%{_sbindir}/tokenCtl
+%{_sbindir}/verifySmiPassword
+%{_sbindir}/wakeupCtl
+%{_sbindir}/dellLcdBrightness
+%{_sbindir}/dellWirelessCtl
 %{_bindir}/dellWirelessCtl
 
 %files unsupported-bin 
 %defattr(-,root,root,-)
 %doc COPYING-GPL COPYING-OSL README include/smbios/config/boost_LICENSE_1_0_txt bin-unsupported/getopts_LICENSE.txt
-%{_bindir}/dellLEDCtl
-%{_bindir}/activateCmosToken
-%{_bindir}/ascii2enUS_scancode
-%{_bindir}/createUnitTestFiles
-%{_bindir}/disable_console_redir
-%{_bindir}/dumpCmos
-%{_bindir}/getPasswordFormat
-%{_bindir}/isCmosTokenActive
-%{_bindir}/probes
-%{_bindir}/smitest
-%{_bindir}/stateByteCtl
-%{_bindir}/upBootCtl
-%{_bindir}/dumpSmbios
-#%{_bindir}/sysid
+%{_sbindir}/dellLEDCtl
+%{_sbindir}/activateCmosToken
+%{_sbindir}/ascii2enUS_scancode
+%{_sbindir}/createUnitTestFiles
+%{_sbindir}/disable_console_redir
+%{_sbindir}/dumpCmos
+%{_sbindir}/getPasswordFormat
+%{_sbindir}/isCmosTokenActive
+%{_sbindir}/probes
+%{_sbindir}/smitest
+%{_sbindir}/stateByteCtl
+%{_sbindir}/upBootCtl
+%{_sbindir}/dumpSmbios
 
 # ./ChangeLog is appended by configure
 %changelog
+* Mon Nov 26 2007 Michael Brown <mebrown@michaels-house.net> - 0.13.13-1
+- Fix for compiling with recent gcc (from Danny Kukawa @ suse)
+- fix for lsb issues - moved binaries to /usr/sbin/ because they require admin
+  privs to run. Made one backwards-compat symlink to work with existing HAL
+  which expects current location.
+
 * Mon Aug 28 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.10-1
 - Fix one instance where return code to fread was incorrectly checked.
 
 * Wed Aug 22 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.9
-- Fix a couple of failure-to-check-return on fread. most were unit-test code
+- Fix a couple of failure-to-check-return on fopen. most were unit-test code
   only, but two or three were in regular code.
 - Add hinting to the memory class, so that it can intelligently close /dev/mem
   file handle when it is not needed (which is most of the time). it only
