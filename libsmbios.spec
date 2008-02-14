@@ -1,7 +1,7 @@
 # these are all substituted by autoconf
 %define major 2
 %define minor 0
-%define sub 0
+%define sub 1
 %define extralevel %{nil}
 %define release_name libsmbios
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -152,6 +152,9 @@ rm -rf %{buildroot}
 
 # ./ChangeLog is appended by configure
 %changelog
+* Wed Feb 13 2008 Michael E Brown <michael_e_brown at dell.com> - 2.0.1
+- Fixup GCC 4.3 compile issues.
+
 * Wed Jan 9 2008 Michael E Brown <michael_e_brown at dell.com> - 2.0.0
 - ABI incompatible, minor API changes
 - sync up libsmbios soname with version #
