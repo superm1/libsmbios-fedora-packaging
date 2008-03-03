@@ -8,7 +8,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+ or OSL
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/%{name}/%{name}-%{version}/%{name}-%{version}.tar.gz
@@ -44,9 +44,9 @@ to get information from standard BIOS tables, such as the SMBIOS table.
 Summary: The "supported" sample binaries that use libsmbios
 Group: Applications/System
 Requires: libsmbios = %{version}-%{release}
-Obsoletes: libsmbios-bin < 0:0.13.11
+Obsoletes: libsmbios-bin < 0:2.0.0
 Provides: libsmbios-bin = %{version}-%{release}
-Obsoletes: libsmbios-unsupported-bin < 0.13.11
+Obsoletes: libsmbios-unsupported-bin < 0:2.0.0
 Provides: libsmbios-unsupported-bin = %{version}-%{release}
 
 %package devel
@@ -152,6 +152,9 @@ rm -rf %{buildroot}
 
 # ./ChangeLog is appended by configure
 %changelog
+* Wed Feb 13 2008 Michael E Brown <michael_e_brown at dell.com> - 2.0.1-2
+- properly obsolete older versions
+
 * Wed Feb 13 2008 Michael E Brown <michael_e_brown at dell.com> - 2.0.1
 - Fixup GCC 4.3 compile issues.
 
