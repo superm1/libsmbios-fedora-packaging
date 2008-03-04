@@ -152,7 +152,7 @@ rm -rf %{buildroot}
 
 # ./ChangeLog is appended by configure
 %changelog
-* Wed Feb 13 2008 Michael E Brown <michael_e_brown at dell.com> - 2.0.1-2
+* Mon Mar 3 2008 Michael E Brown <michael_e_brown at dell.com> - 2.0.1-2
 - properly obsolete older versions
 
 * Wed Feb 13 2008 Michael E Brown <michael_e_brown at dell.com> - 2.0.1
