@@ -8,7 +8,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 2%{?dist}
+Release: 2%{?dist}.1
 License: GPLv2+ or OSL
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/%{name}/%{name}-%{version}/%{name}-%{version}.tar.gz
@@ -48,6 +48,8 @@ Obsoletes: libsmbios-bin < 0:2.0.0
 Provides: libsmbios-bin = %{version}-%{release}
 Obsoletes: libsmbios-unsupported-bin < 0:2.0.0
 Provides: libsmbios-unsupported-bin = %{version}-%{release}
+Obsoletes: libsmbios-libs < 0:2.0.0
+Provides: libsmbios-libs = %{version}-%{release}
 
 %package devel
 Summary: Development headers and archives
@@ -152,6 +154,9 @@ rm -rf %{buildroot}
 
 # ./ChangeLog is appended by configure
 %changelog
+* Mon Apr 21 2008 Michael E Brown <michael_e_brown at dell.com> - 2.0.1-2.1
+- obsolete libsmbios-libs as well
+
 * Mon Mar 3 2008 Michael E Brown <michael_e_brown at dell.com> - 2.0.1-2
 - properly obsolete older versions
 
