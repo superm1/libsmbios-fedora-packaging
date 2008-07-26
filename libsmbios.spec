@@ -9,7 +9,7 @@
 Name: %{release_name}
 Version: %{release_version}
 Release: 2%{?dist}.1
-License: GPLv2+ or OSL
+License: GPLv2+ or OSL 2.1
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/%{name}/%{name}-%{version}/%{name}-%{version}.tar.gz
 URL: http://linux.dell.com/libsmbios/main
