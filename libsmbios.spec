@@ -3,7 +3,7 @@
 # these are all substituted by autoconf
 %define major 2
 %define minor 2
-%define micro 8
+%define micro 12
 %define extra %{nil}
 %define lang_dom  libsmbios-2.2
 %define release_version %{major}.%{minor}.%{micro}%{extra}
@@ -27,6 +27,7 @@
 # some distros already have fdupes macro. If not, we just set it to something innocuous
 %{?!fdupes: %define fdupes /usr/sbin/hardlink -c -v}
 
+%define pkgconfig_BR pkgconfig
 %define ctypes_BR python-ctypes
 %define cppunit_BR cppunit-devel
 %define fdupes_BR hardlink
@@ -72,7 +73,7 @@ Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/libsmbios/libsmbios-%{version}/libsmbios-%{version}.tar.bz2
 URL: http://linux.dell.com/libsmbios/main
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: strace libxml2-devel python-devel gcc-c++ gettext valgrind doxygen %{cppunit_BR} %{fdupes_BR}
+BuildRequires: strace libxml2-devel python-devel gcc-c++ gettext valgrind doxygen %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR}
 # uncomment for official fedora
 Obsoletes: libsmbios-libs < 2.0.0
 Provides: libsmbios-libs = 0:%{version}-%{release}
@@ -160,7 +161,7 @@ chmod 755 src/cppunit/*.sh
 
 %build
 # this line lets us build an RPM directly from a git tarball
-[ -e ./configure ] || ./autogen.sh
+[ -e ./configure ] || ./autogen.sh --no-configure
 
 mkdir _build
 cd _build
@@ -169,7 +170,6 @@ chmod +x ./configure
 
 %configure \
     --disable-static    \
-    RELEASE_MAJOR=%{major} RELEASE_MINOR=%{minor} RELEASE_MICRO=%{micro} RELEASE_EXTRA=%{extra} \
     CFLAGS="%{optflags}" CXXFLAGS="%{optflags}"
 mkdir -p out/libsmbios_c
 mkdir -p out/libsmbios_c++
@@ -216,6 +216,7 @@ TOPDIR=..
 make install DESTDIR=%{buildroot} INSTALL="%{__install} -p"
 mkdir -p %{buildroot}/usr/include
 cp -a $TOPDIR/src/include/*  %{buildroot}/usr/include/
+cp -a out/public-include/*  %{buildroot}/usr/include/
 rm -f %{buildroot}/%{_libdir}/lib*.la
 find %{buildroot}/usr/include out/libsmbios_c++ out/libsmbios_c -exec touch -r $TOPDIR/configure.ac {} \;
 
@@ -254,6 +255,7 @@ rm -rf %{buildroot}
 /usr/include/smbios_c
 %{_libdir}/libsmbios.so
 %{_libdir}/libsmbios_c.so
+%{_libdir}/pkgconfig/*.pc
 %doc _build/out/libsmbios_c++
 %doc _build/out/libsmbios_c
 
@@ -323,6 +325,10 @@ rm -rf %{buildroot}
 %{_datadir}/smbios-utils
 
 %changelog
+* Thu Feb 2 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.12-1
+- Add pkgconfig files to -devel
+- fixup yum plugin to not parse certain data that causes a crash on some machines (Optiplex 755, others may be affected)
+
 * Thu Jan 15 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.8-1
 - revert change in upstream renaming rpm to libsmbios2
 
