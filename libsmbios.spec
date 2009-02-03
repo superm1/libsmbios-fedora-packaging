@@ -3,7 +3,7 @@
 # these are all substituted by autoconf
 %define major 2
 %define minor 2
-%define micro 12
+%define micro 13
 %define extra %{nil}
 %define lang_dom  libsmbios-2.2
 %define release_version %{major}.%{minor}.%{micro}%{extra}
@@ -325,7 +325,20 @@ rm -rf %{buildroot}
 %{_datadir}/smbios-utils
 
 %changelog
-* Thu Feb 2 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.12-1
+* Tue Feb 3 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.12-1
+- Add feature to turn on debugging printf()'s without recompiling by setting
+  certain environment variables:
+    LIBSMBIOS_C_DEBUG_OUTPUT_ALL    -- all debugging output
+        or, per module:
+    LIBSMBIOS_C_DEBUG_CONSTRUCTOR_C
+    LIBSMBIOS_C_DEBUG_SYSINFO_C
+    LIBSMBIOS_C_DEBUG_SMBIOS_C
+    LIBSMBIOS_C_DEBUG_TOKEN_C
+    LIBSMBIOS_C_DEBUG_MEMORY_C
+    LIBSMBIOS_C_DEBUG_CMOS_C
+    LIBSMBIOS_C_DEBUG_SMI_C
+
+* Mon Feb 2 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.12-1
 - Add pkgconfig files to -devel
 - fixup yum plugin to not parse certain data that causes a crash on some machines (Optiplex 755, others may be affected)
 
