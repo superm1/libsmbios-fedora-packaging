@@ -88,11 +88,12 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/libsmbios/libsmbios-%{version}/libsmbios-%{version}.tar.bz2
+Patch0: 0003-upgrade-known-version-of-gcc-to-4.5.patch
 URL: http://linux.dell.com/libsmbios/main
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: strace libxml2-devel gcc-c++ gettext doxygen %{valgrind_BR} %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR} %{python_devel_BR}
@@ -180,6 +181,7 @@ programs against libsmbios.
 
 %prep
 %setup -q -n libsmbios-%{version}
+%patch0 -p1
 find . -type d -exec chmod -f 755 {} \;
 find doc src -type f -exec chmod -f 644 {} \;
 chmod 755 src/cppunit/*.sh
@@ -363,6 +365,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.16-1
+- add gcc 4.4 support
+
 * Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.15-2
 - update to lastest upstream.
 - fixes bug in bios update on systems with versions like x.y.z.

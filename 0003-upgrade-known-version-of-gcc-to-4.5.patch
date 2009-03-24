@@ -1,0 +1,41 @@
+From d601364eb3ee592eaf7a414f748d794d46785f01 Mon Sep 17 00:00:00 2001
+From: Michael E Brown <mebrown@michaels-house.net>
+Date: Tue, 24 Mar 2009 01:44:14 -0500
+Subject: [PATCH] upgrade known version of gcc to 4.5
+
+---
+ src/include/smbios/config/compiler/gcc.hpp |    3 +--
+ src/include/smbios_c/config/compiler/gcc.h |    3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/src/include/smbios/config/compiler/gcc.hpp b/src/include/smbios/config/compiler/gcc.hpp
+index d42d038..0891255 100644
+--- a/src/include/smbios/config/compiler/gcc.hpp
++++ b/src/include/smbios/config/compiler/gcc.hpp
+@@ -113,8 +113,7 @@
+ #  error "Compiler not configured - please reconfigure"
+ #endif
+ //
+-// last known and checked version is 3.4:
+-#if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 3))
++#if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 5))
+ #  if defined(LIBSMBIOS_ASSERT_CONFIG)
+ #     error "Unknown compiler version - please run the configure tests and report the results"
+ #  else
+diff --git a/src/include/smbios_c/config/compiler/gcc.h b/src/include/smbios_c/config/compiler/gcc.h
+index d542f65..8d83d4d 100644
+--- a/src/include/smbios_c/config/compiler/gcc.h
++++ b/src/include/smbios_c/config/compiler/gcc.h
+@@ -23,8 +23,7 @@
+ #  error "GCC versions < 2.90 not supported"
+ #endif
+ //
+-// last known and checked version is 3.4:
+-#if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 4))
++#if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 5))
+ #  if defined(LIBSMBIOS_C_ASSERT_CONFIG)
+ #     error "Unknown compiler version - please run the configure tests and report the results"
+ #  else
+-- 
+1.6.0.6
+
