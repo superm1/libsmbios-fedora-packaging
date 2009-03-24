@@ -3,7 +3,7 @@
 # these are all substituted by autoconf
 %define major 2
 %define minor 2
-%define micro 13
+%define micro 15
 %define extra %{nil}
 %define lang_dom  libsmbios-2.2
 %define release_version %{major}.%{minor}.%{micro}%{extra}
@@ -20,7 +20,11 @@
 # required by suse build system
 # norootforbuild
 
-%define run_unit_tests 1
+%{!?build_python:   %define build_python 1}
+%{?_with_python:    %define build_python 1}
+%{?_without_python: %define build_python 0}
+
+%{!?run_unit_tests:     %define run_unit_tests 1}
 %{?_without_unit_tests: %define run_unit_tests 0}
 %{?_with_unit_tests:    %define run_unit_tests 1}
 
@@ -31,6 +35,7 @@
 %define ctypes_BR python-ctypes
 %define cppunit_BR cppunit-devel
 %define fdupes_BR hardlink
+%define valgrind_BR valgrind
 # Some variable definitions so that we can be compatible between SUSE Build service and Fedora build system
 # SUSE: fedora_version  suse_version rhel_version centos_version sles_version
 # Fedora: fedora dist fc8 fc9
@@ -57,23 +62,40 @@
     # dont yet have rhel4 cppunit
     %define cppunit_BR %{nil}
 %endif
+%if 0%{?rhel_version} < 400
+    # dont yet have rhel3 valgrind
+    %define valgrind_BR %{nil}
+    # no python-ctypes for python <= 2.2
+    %define build_python 0
+%endif
 %endif
 
-# per fedora and suse python packaging guidelines
-# suse: will define py_sitedir for us
-# fedora: use the !? code below to define when it isnt already
-%{!?py_sitedir: %define py_sitedir %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%define python_devel_BR %{nil}
+%define cond_disable_python --disable-python
+%if %{build_python}
+    %define cond_disable_python %{nil}
+    %define python_devel_BR python-devel
+    # per fedora and suse python packaging guidelines
+    # suse: will define py_sitedir for us
+    # fedora: use the !? code below to define when it isnt already
+    %{!?py_sitedir: %define py_sitedir %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%endif
+
+%if !%{run_unit_tests}
+    %define valgrind_BR %{nil}
+    %define cppunit_BR %{nil}
+%endif
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 2%{?dist}
+Release: 1%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/libsmbios/libsmbios-%{version}/libsmbios-%{version}.tar.bz2
 URL: http://linux.dell.com/libsmbios/main
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: strace libxml2-devel python-devel gcc-c++ gettext valgrind doxygen %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR}
+BuildRequires: strace libxml2-devel gcc-c++ gettext doxygen %{valgrind_BR} %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR} %{python_devel_BR}
 # uncomment for official fedora
 Obsoletes: libsmbios-libs < 2.0.0
 Provides: libsmbios-libs = 0:%{version}-%{release}
@@ -107,7 +129,10 @@ This package provides a Python interface to libsmbios
 %package -n smbios-utils
 Summary: meta-package that pulls in all smbios utilities (binary executables and python scripts)
 Group: Applications/System
-Requires: smbios-utils-bin smbios-utils-python
+Requires: smbios-utils-bin
+%if %{build_python}
+Requires: smbios-utils-python
+%endif
 Obsoletes: libsmbios-bin < 0:2.0.0
 Provides: libsmbios-bin = %{version}-%{release}
 Obsoletes: libsmbios-unsupported-bin < 0:2.0.0
@@ -124,7 +149,7 @@ Requires: %{release_name} = 0:%{version}-%{release}
 
 %description -n smbios-utils-bin
 Get BIOS information, such as System product name, product id, service tag and
-asset tag. 
+asset tag.
 
 %package -n smbios-utils-python
 Summary: Python executables that use libsmbios
@@ -161,7 +186,13 @@ chmod 755 src/cppunit/*.sh
 
 %build
 # this line lets us build an RPM directly from a git tarball
-[ -e ./configure ] || ./autogen.sh --no-configure
+# and retains any customized version information we might have
+[ -e ./configure ] || \
+    RELEASE_MAJOR=%{major}  \
+    RELEASE_MINOR=%{minor}  \
+    RELEASE_MICRO=%{micro}  \
+    RELEASE_EXTRA=%{extra}  \
+    ./autogen.sh --no-configure
 
 mkdir _build
 cd _build
@@ -170,6 +201,7 @@ chmod +x ./configure
 
 %configure \
     --disable-static    \
+    %{cond_disable_python} \
     CFLAGS="%{optflags}" CXXFLAGS="%{optflags}"
 mkdir -p out/libsmbios_c
 mkdir -p out/libsmbios_c++
@@ -221,11 +253,13 @@ rm -f %{buildroot}/%{_libdir}/lib*.la
 find %{buildroot}/usr/include out/libsmbios_c++ out/libsmbios_c -exec touch -r $TOPDIR/configure.ac {} \;
 
 # backwards compatible:
+%if %{build_python}
 ln -s ../sbin/dellWirelessCtl %{buildroot}/usr/bin/dellWirelessCtl
 ln -s smbios-sys-info %{buildroot}%{_sbindir}/getSystemId
 ln -s smbios-wireless-ctl %{buildroot}%{_sbindir}/dellWirelessCtl
 ln -s smbios-lcd-brightness %{buildroot}%{_sbindir}/dellLcdBrightness
 ln -s smbios-rbu-bios-update %{buildroot}%{_sbindir}/dellBiosUpdate
+%endif
 
 %find_lang %{lang_dom}
 
@@ -243,10 +277,12 @@ rm -rf %{buildroot}
 %{_libdir}/libsmbios_c.so.*
 %{_libdir}/libsmbios.so.*
 
+%if %{build_python}
 %files -n python-smbios
 %defattr(-,root,root,-)
 %doc COPYING-GPL COPYING-OSL README
 %{py_sitedir}/*
+%endif
 
 %files -n libsmbios-devel -f _build/buildlogs.txt
 %defattr(-,root,root,-)
@@ -263,7 +299,7 @@ rm -rf %{buildroot}
 # opensuse 11.1 enforces non-empty file list :(
 %defattr(-,root,root,-)
 %doc COPYING-GPL COPYING-OSL README
-# no other files. 
+# no other files.
 
 %files -n smbios-utils-bin
 %defattr(-,root,root,-)
@@ -285,6 +321,7 @@ rm -rf %{buildroot}
 %{_sbindir}/smbios-sys-info-lite
 
 
+%if %{build_python}
 %files -n smbios-utils-python
 %defattr(-,root,root,-)
 %doc COPYING-GPL COPYING-OSL README
@@ -323,8 +360,13 @@ rm -rf %{buildroot}
 
 # data files
 %{_datadir}/smbios-utils
+%endif
 
 %changelog
+* Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.15-2
+- update to lastest upstream.
+- fixes bug in bios update on systems with versions like x.y.z.
+
 * Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.13-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
@@ -413,16 +455,16 @@ rm -rf %{buildroot}
 - fix for signed/unsigned bug in probes binary. CPU temp misreported
 - simplify interface for DELL_CALLING_INTERFACE_SMI, autodetect Port/Magic
 - document all of the tokens for controlling wireless on dell notebooks
-- enums for SMI args/res to make code match docs better (cbRES1 = res[0], which 
+- enums for SMI args/res to make code match docs better (cbRES1 = res[0], which
   was confusing.
 - helper functions isTokenActive() and activateToken() to simplify token API.
-- Added missing windows .cpp files to the dist tarball for those who compile 
+- Added missing windows .cpp files to the dist tarball for those who compile
   windows from dist tarball vs source control
 - Add support for EFI based machines without backwards compatible smbios table
   entry point in 0xF0000 block.
-- Added wirelessSwitchControl() and wirelessRadioControl() API for newer 
+- Added wirelessSwitchControl() and wirelessRadioControl() API for newer
   laptops.
-- fixed bug in TokenDA activate() code where it wasnt properly using SMI 
+- fixed bug in TokenDA activate() code where it wasnt properly using SMI
   (never worked, but apparently wasnt used until now.)
 
 * Tue Oct 3 2006 Michael E Brown <Michael_E_Brown@Dell.com> - 0.13.0-1
