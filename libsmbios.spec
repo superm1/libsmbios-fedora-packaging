@@ -3,7 +3,7 @@
 # these are all substituted by autoconf
 %define major 2
 %define minor 2
-%define micro 15
+%define micro 16
 %define extra %{nil}
 %define lang_dom  libsmbios-2.2
 %define release_version %{major}.%{minor}.%{micro}%{extra}
@@ -42,6 +42,9 @@
 
 # suse/sles
 %if 0%{?suse_version}
+%if 0%{?suse_version} < 1000
+    %define valgrind_BR %{nil}
+%endif
 %if 0%{?suse_version} >= 1020
     # suse never added python-ctypes provides to python 2.5 :(
     %define ctypes_BR %{nil}
@@ -88,13 +91,11 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 3%{?dist}
+Release: 2.1%{?releasesuffix}%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/libsmbios/libsmbios-%{version}/libsmbios-%{version}.tar.bz2
-Patch0: 0003-upgrade-known-version-of-gcc-to-4.5.patch
-Patch1: 0001-fix-pointer-aliasing-issue-in-c-id-byte-code.patch
 URL: http://linux.dell.com/libsmbios/main
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: strace libxml2-devel gcc-c++ gettext doxygen %{valgrind_BR} %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR} %{python_devel_BR}
@@ -123,7 +124,7 @@ should use the libsmbios C interface.
 Summary: Python interface to Libsmbios C library
 Group: System Environment/Libraries
 Requires: %{release_name} = 0:%{version}-%{release}
-Requires: python %{ctypes_BR}
+Requires: python %{ctypes_BR} redhat-rpm-config
 
 %description -n python-smbios
 This package provides a Python interface to libsmbios
@@ -182,8 +183,6 @@ programs against libsmbios.
 
 %prep
 %setup -q -n libsmbios-%{version}
-%patch0 -p1
-%patch1 -p1
 find . -type d -exec chmod -f 755 {} \;
 find doc src -type f -exec chmod -f 644 {} \;
 chmod 755 src/cppunit/*.sh
@@ -367,11 +366,10 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
-* Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.16-3
+* Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.16-1
 - add gcc 4.4 support
-- fix pointer aliasing issue
 
-* Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.15-2
+* Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.15-1
 - update to lastest upstream.
 - fixes bug in bios update on systems with versions like x.y.z.
 
