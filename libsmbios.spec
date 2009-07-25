@@ -91,7 +91,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 2.1%{?releasesuffix}%{?dist}
+Release: 3.1%{?releasesuffix}%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -366,6 +366,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Sat Jul 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.16-3.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
 * Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.16-1
 - add gcc 4.4 support
 
