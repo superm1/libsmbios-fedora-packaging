@@ -1,39 +1,42 @@
 # pkg/libsmbios.spec.  Generated from libsmbios.spec.in by configure.
+# required by suse build system
+# norootforbuild
 
 # these are all substituted by autoconf
 %define major 2
 %define minor 2
-%define micro 16
+%define micro 19
 %define extra %{nil}
+%define pot_file  libsmbios
 %define lang_dom  libsmbios-2.2
-%define release_version %{major}.%{minor}.%{micro}%{extra}
+%define release_version 2.2.19
 
 %define release_name libsmbios
 %define other_name   libsmbios2
-
-# suse naming conventions
 %if 0%{?suse_version}
 %define release_name libsmbios2
 %define other_name   libsmbios
 %endif
 
-# required by suse build system
-# norootforbuild
-
 %{!?build_python:   %define build_python 1}
 %{?_with_python:    %define build_python 1}
-%{?_without_python: %define build_python 0}
+%{?_without_python: %undefine build_python}
 
-%{!?run_unit_tests:     %define run_unit_tests 1}
-%{?_without_unit_tests: %define run_unit_tests 0}
+# run_unit_tests not defined by default as cppunit
+# not available in OS on several major OS
+%{?_without_unit_tests: %undefine run_unit_tests}
 %{?_with_unit_tests:    %define run_unit_tests 1}
+
+%{!?as_needed:         %define as_needed 1}
+%{?_without_as_needed: %undefine as_needed}
+%{?_with_as_needed:    %define as_needed 1}
 
 # some distros already have fdupes macro. If not, we just set it to something innocuous
 %{?!fdupes: %define fdupes /usr/sbin/hardlink -c -v}
 
+%define cppunit_BR cppunit-devel
 %define pkgconfig_BR pkgconfig
 %define ctypes_BR python-ctypes
-%define cppunit_BR cppunit-devel
 %define fdupes_BR hardlink
 %define valgrind_BR valgrind
 # Some variable definitions so that we can be compatible between SUSE Build service and Fedora build system
@@ -44,6 +47,8 @@
 %if 0%{?suse_version}
 %if 0%{?suse_version} < 1000
     %define valgrind_BR %{nil}
+    # sles 9 doesnt have as_needed
+    %undefine as_needed
 %endif
 %if 0%{?suse_version} >= 1020
     # suse never added python-ctypes provides to python 2.5 :(
@@ -57,26 +62,24 @@
 %endif
 %endif
 
-# rhel
-%if 0%{?rhel_version}
-%if 0%{?rhel_version} < 500
+# rhel (should work on OBS and EPEL)
+%if 0%{?rhel}
+%if 0%{?rhel} < 5
     %define fdupes echo fdupes disabled
     %define fdupes_BR %{nil}
-    # dont yet have rhel4 cppunit
-    %define cppunit_BR %{nil}
 %endif
-%if 0%{?rhel_version} < 400
+%if 0%{?rhel} < 4
     # dont yet have rhel3 valgrind
     %define valgrind_BR %{nil}
     # no python-ctypes for python <= 2.2
-    %define build_python 0
+    %undefine build_python
+    # rhel3 doesnt have -as-needed
+    %undefine as_needed
 %endif
 %endif
 
 %define python_devel_BR %{nil}
-%define cond_disable_python --disable-python
-%if %{build_python}
-    %define cond_disable_python %{nil}
+%if 0%{?build_python}
     %define python_devel_BR python-devel
     # per fedora and suse python packaging guidelines
     # suse: will define py_sitedir for us
@@ -84,14 +87,13 @@
     %{!?py_sitedir: %define py_sitedir %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %endif
 
-%if !%{run_unit_tests}
-    %define valgrind_BR %{nil}
-    %define cppunit_BR %{nil}
-%endif
+# if unit tests are disabled, get rid of a few BuildRequires
+%{!?run_unit_tests: %define cppunit_BR %{nil}}
+%{!?run_unit_tests: %define valgrind_BR %{nil}}
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 3.1%{?releasesuffix}%{?dist}
+Release: 1%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -124,16 +126,16 @@ should use the libsmbios C interface.
 Summary: Python interface to Libsmbios C library
 Group: System Environment/Libraries
 Requires: %{release_name} = 0:%{version}-%{release}
-Requires: python %{ctypes_BR} redhat-rpm-config
+Requires: python %{ctypes_BR}
 
 %description -n python-smbios
 This package provides a Python interface to libsmbios
 
 %package -n smbios-utils
-Summary: meta-package that pulls in all smbios utilities (binary executables and python scripts)
+Summary: Meta-package that pulls in all smbios binaries and python scripts
 Group: Applications/System
 Requires: smbios-utils-bin
-%if %{build_python}
+%if 0%{?build_python}
 Requires: smbios-utils-python
 %endif
 Obsoletes: libsmbios-bin < 0:2.0.0
@@ -180,8 +182,30 @@ information from standard BIOS tables, such as the SMBIOS table.
 This package contains the headers and .a files necessary to compile new client
 programs against libsmbios.
 
+%package -n yum-dellsysid
+Summary: YUM plugin to retrieve the Dell System ID
+Group: Development/Tools
+Requires: smbios-utils-python = 0:%{version}-%{release}
+
+%description -n yum-dellsysid
+Libsmbios is a library and utilities that can be used by client programs to get
+information from standard BIOS tables, such as the SMBIOS table.
+
+This package contains a YUM plugin which allows the use of certain
+substitutions in yum repository configuration files on Dell systems.
+
 
 %prep
+: '########################################'
+: '########################################'
+: '#'
+: '# build_python: %{?build_python}'
+: '# run_unit_tests: %{?run_unit_tests}'
+: '# rhel: %{?rhel}'
+: '# suse_version: %{?suse_version}'
+: '#'
+: '########################################'
+: '########################################'
 %setup -q -n libsmbios-%{version}
 find . -type d -exec chmod -f 755 {} \;
 find doc src -type f -exec chmod -f 644 {} \;
@@ -190,12 +214,7 @@ chmod 755 src/cppunit/*.sh
 %build
 # this line lets us build an RPM directly from a git tarball
 # and retains any customized version information we might have
-[ -e ./configure ] || \
-    RELEASE_MAJOR=%{major}  \
-    RELEASE_MINOR=%{minor}  \
-    RELEASE_MICRO=%{micro}  \
-    RELEASE_EXTRA=%{extra}  \
-    ./autogen.sh --no-configure
+[ -e ./configure ] || ./autogen.sh --no-configure
 
 mkdir _build
 cd _build
@@ -203,14 +222,13 @@ echo '../configure "$@"' > configure
 chmod +x ./configure
 
 %configure \
-    --disable-static    \
-    %{cond_disable_python} \
-    CFLAGS="%{optflags}" CXXFLAGS="%{optflags}"
+    %{?!as_needed:--disable-as-needed} %{?!build_python:--disable-python}
+
 mkdir -p out/libsmbios_c
 mkdir -p out/libsmbios_c++
-make -e %{?_smp_mflags} 2>&1 | tee build.log
+make %{?_smp_mflags} 2>&1 | tee build-%{_arch}.log
 
-echo \%doc _build/build.log > buildlogs.txt
+echo \%doc _build/build-%{_arch}.log > buildlogs.txt
 
 %check
 runtest() {
@@ -219,9 +237,10 @@ runtest() {
     pushd _$1$2
     ../configure
     make -e $1 CFLAGS="$CFLAGS -DDEBUG_OUTPUT_ALL" 2>&1 | tee $1$2.log
-    #make -e $1 2>&1 | tee $1$2.log
+    touch -r ../configure.ac $1$2-%{_arch}.log
+    make -e $1 2>&1 | tee $1$2.log
     popd
-    echo \%doc _$1$2/$1$2.log >> _build/buildlogs.txt
+    echo \%doc _$1$2/$1$2-%{_arch}.log >> _build/buildlogs.txt
 %endif
 }
 
@@ -249,22 +268,78 @@ mkdir %{buildroot}
 cd _build
 TOPDIR=..
 make install DESTDIR=%{buildroot} INSTALL="%{__install} -p"
-mkdir -p %{buildroot}/usr/include
-cp -a $TOPDIR/src/include/*  %{buildroot}/usr/include/
-cp -a out/public-include/*  %{buildroot}/usr/include/
-rm -f %{buildroot}/%{_libdir}/lib*.la
-find %{buildroot}/usr/include out/libsmbios_c++ out/libsmbios_c -exec touch -r $TOPDIR/configure.ac {} \;
+mkdir -p %{buildroot}/%{_includedir}
+cp -a $TOPDIR/src/include/*  %{buildroot}/%{_includedir}/
+cp -a out/public-include/*  %{buildroot}/%{_includedir}/
+rm -f %{buildroot}/%{_libdir}/lib*.{la,a}
+find %{buildroot}/%{_includedir} out/libsmbios_c++ out/libsmbios_c -exec touch -r $TOPDIR/configure.ac {} \;
+
+mv out/libsmbios_c++  out/libsmbios_c++-%{_arch}
+mv out/libsmbios_c    out/libsmbios_c-%{_arch}
+
+rename %{pot_file}.mo %{lang_dom}.mo $(find %{buildroot}/%{_datadir} -name %{pot_file}.mo)
+%find_lang %{lang_dom}
+
+touch files-yum-dellsysid
+touch files-smbios-utils-python
+touch files-python-smbios
+
+%if 0%{?build_python}
 
 # backwards compatible:
-%if %{build_python}
-ln -s ../sbin/dellWirelessCtl %{buildroot}/usr/bin/dellWirelessCtl
-ln -s smbios-sys-info %{buildroot}%{_sbindir}/getSystemId
-ln -s smbios-wireless-ctl %{buildroot}%{_sbindir}/dellWirelessCtl
-ln -s smbios-lcd-brightness %{buildroot}%{_sbindir}/dellLcdBrightness
-ln -s smbios-rbu-bios-update %{buildroot}%{_sbindir}/dellBiosUpdate
-%endif
+ln -s %{_sbindir}/dellWirelessCtl %{buildroot}/%{_bindir}/dellWirelessCtl
+ln -s smbios-sys-info %{buildroot}/%{_sbindir}/getSystemId
+ln -s smbios-wireless-ctl %{buildroot}/%{_sbindir}/dellWirelessCtl
+ln -s smbios-lcd-brightness %{buildroot}/%{_sbindir}/dellLcdBrightness
+ln -s smbios-rbu-bios-update %{buildroot}/%{_sbindir}/dellBiosUpdate
 
-%find_lang %{lang_dom}
+cat > files-python-smbios <<-EOF
+	%doc COPYING-GPL COPYING-OSL README
+	%{py_sitedir}/*
+EOF
+
+cat > files-smbios-utils-python <<-EOF
+	%doc COPYING-GPL COPYING-OSL README
+	%doc src/bin/getopts_LICENSE.txt src/include/smbios/config/boost_LICENSE_1_0_txt
+	%doc doc/pkgheader.sh
+	%dir %{_sysconfdir}/libsmbios
+	%config(noreplace) %{_sysconfdir}/libsmbios/*
+	
+	# python utilities
+	%{_sbindir}/smbios-sys-info
+	%{_sbindir}/smbios-token-ctl
+	%{_sbindir}/smbios-passwd
+	%{_sbindir}/smbios-wakeup-ctl
+	%{_sbindir}/smbios-wireless-ctl
+	%{_sbindir}/smbios-rbu-bios-update
+	%{_sbindir}/smbios-lcd-brightness
+	
+	# symlinks: backwards compat
+	%{_sbindir}/dellLcdBrightness
+	%{_sbindir}/getSystemId
+	%{_sbindir}/dellWirelessCtl
+	%{_sbindir}/dellBiosUpdate
+	# used by HAL in old location, so keep it around until HAL is updated.
+	%{_bindir}/dellWirelessCtl
+	
+	# data files
+	%{_datadir}/smbios-utils
+EOF
+
+cat > files-yum-dellsysid <<-EOF
+	%doc COPYING-GPL COPYING-OSL README
+	# YUM Plugin
+	%config(noreplace) %{_sysconfdir}/yum/pluginconf.d/*
+	%{_exec_prefix}/lib/yum-plugins/*
+	# SUSE build has anal directory ownership check. RPM which owns all dirs *must*
+	# be installed at buildtime.
+	%if 0%{?suse_version} >= 1100
+	%dir %{_sysconfdir}/yum
+	%dir %{_sysconfdir}/yum/pluginconf.d/
+	%dir %{_exec_prefix}/lib/yum-plugins/
+	%endif
+EOF
+%endif
 
 # hardlink files to save some space.
 %fdupes $RPM_BUILD_ROOT
@@ -275,28 +350,21 @@ rm -rf %{buildroot}
 %post   -n %{release_name}   -p /sbin/ldconfig
 %postun -n %{release_name}   -p /sbin/ldconfig
 
-%files -n %{release_name} -f _build/%{lang_dom}.lang
+%files -f _build/%{lang_dom}.lang
 %defattr(-,root,root,-)
 %{_libdir}/libsmbios_c.so.*
 %{_libdir}/libsmbios.so.*
 
-%if %{build_python}
-%files -n python-smbios
-%defattr(-,root,root,-)
-%doc COPYING-GPL COPYING-OSL README
-%{py_sitedir}/*
-%endif
-
 %files -n libsmbios-devel -f _build/buildlogs.txt
 %defattr(-,root,root,-)
 %doc COPYING-GPL COPYING-OSL README src/bin/getopts_LICENSE.txt src/include/smbios/config/boost_LICENSE_1_0_txt
-/usr/include/smbios
-/usr/include/smbios_c
+%{_includedir}/smbios
+%{_includedir}/smbios_c
 %{_libdir}/libsmbios.so
 %{_libdir}/libsmbios_c.so
 %{_libdir}/pkgconfig/*.pc
-%doc _build/out/libsmbios_c++
-%doc _build/out/libsmbios_c
+%doc _build/out/libsmbios_c++-%{_arch}
+%doc _build/out/libsmbios_c-%{_arch}
 
 %files -n smbios-utils
 # opensuse 11.1 enforces non-empty file list :(
@@ -309,65 +377,38 @@ rm -rf %{buildroot}
 %doc COPYING-GPL COPYING-OSL README
 %doc src/bin/getopts_LICENSE.txt src/include/smbios/config/boost_LICENSE_1_0_txt
 %doc doc/pkgheader.sh
-
+#
 # legacy C++
 %{_sbindir}/dellBiosUpdate-compat
 %{_sbindir}/dellLEDCtl
 %ifnarch ia64
 %{_sbindir}/dellMediaDirectCtl
 %endif
-
+#
 # new C utilities
 %{_sbindir}/smbios-state-byte-ctl
 %{_sbindir}/smbios-get-ut-data
 %{_sbindir}/smbios-upflag-ctl
 %{_sbindir}/smbios-sys-info-lite
 
-
-%if %{build_python}
-%files -n smbios-utils-python
+%files -n python-smbios -f _build/files-python-smbios
 %defattr(-,root,root,-)
-%doc COPYING-GPL COPYING-OSL README
-%doc src/bin/getopts_LICENSE.txt src/include/smbios/config/boost_LICENSE_1_0_txt
-%doc doc/pkgheader.sh
-%dir %{_sysconfdir}/libsmbios
-%config(noreplace) %{_sysconfdir}/libsmbios/*
 
-# YUM Plugin
-%config(noreplace) %{_sysconfdir}/yum/pluginconf.d/dellsysidplugin2.conf
-%{_exec_prefix}/lib/yum-plugins/*
-# SUSE build has anal directory ownership check. RPM which owns all dirs *must*
-# be installed at buildtime.
-%if 0%{?suse_version} >= 1100
-%dir %{_sysconfdir}/yum
-%dir %{_sysconfdir}/yum/pluginconf.d/
-%dir %{_exec_prefix}/lib/yum-plugins/
-%endif
+%files -n smbios-utils-python -f _build/files-smbios-utils-python
+%defattr(-,root,root,-)
 
-# python utilities
-%{_sbindir}/smbios-sys-info
-%{_sbindir}/smbios-token-ctl
-%{_sbindir}/smbios-passwd
-%{_sbindir}/smbios-wakeup-ctl
-%{_sbindir}/smbios-wireless-ctl
-%{_sbindir}/smbios-rbu-bios-update
-%{_sbindir}/smbios-lcd-brightness
-
-# symlinks: backwards compat
-%{_sbindir}/dellLcdBrightness
-%{_sbindir}/getSystemId
-%{_sbindir}/dellWirelessCtl
-%{_sbindir}/dellBiosUpdate
-# used by HAL in old location, so keep it around until HAL is updated.
-%{_bindir}/dellWirelessCtl
-
-# data files
-%{_datadir}/smbios-utils
-%endif
+%files -n yum-dellsysid -f _build/files-yum-dellsysid
+%defattr(-,root,root,-)
 
 %changelog
+* Fri Dec 11 2009 Matt Domsch <mdomsch@fedoraproject.org> - 2.2.19-1
+- update to upstream 2.2.19
+
 * Sat Jul 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.16-3.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
+* Mon May 18 2009 Matt Domsch <Matt_Domsch@dell.com> - 2.2.16-3
+- split yum plugin into yum-dellsysid package
 
 * Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.16-1
 - add gcc 4.4 support
