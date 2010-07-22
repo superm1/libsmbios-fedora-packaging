@@ -93,7 +93,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -401,6 +401,9 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Wed Jul 21 2010 David Malcolm <dmalcolm@redhat.com> - 2.2.19-2
+- Rebuilt for https://fedoraproject.org/wiki/Features/Python_2.7/MassRebuild
+
 * Fri Dec 11 2009 Matt Domsch <mdomsch@fedoraproject.org> - 2.2.19-1
 - update to upstream 2.2.19
 
