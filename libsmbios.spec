@@ -5,11 +5,11 @@
 # these are all substituted by autoconf
 %define major 2
 %define minor 2
-%define micro 19
+%define micro 26
 %define extra %{nil}
 %define pot_file  libsmbios
-%define lang_dom  libsmbios-2.2
-%define release_version 2.2.19
+%define lang_dom  libsmbios-2.2-x86_64
+%define release_version 2.2.26
 
 %define release_name libsmbios
 %define other_name   libsmbios2
@@ -84,7 +84,13 @@
     # per fedora and suse python packaging guidelines
     # suse: will define py_sitedir for us
     # fedora: use the !? code below to define when it isnt already
-    %{!?py_sitedir: %define py_sitedir %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+
+    # pure python stuff goes here
+    %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")}
+
+    # arch-dep python stuff goes here
+    %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
+
 %endif
 
 # if unit tests are disabled, get rid of a few BuildRequires
@@ -93,7 +99,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -185,7 +191,8 @@ programs against libsmbios.
 %package -n yum-dellsysid
 Summary: YUM plugin to retrieve the Dell System ID
 Group: Development/Tools
-Requires: smbios-utils-python = 0:%{version}-%{release}
+# yum plugin and supporting functions first appeared in 2.2.0
+Requires: smbios-utils-python >= 2.2.0
 
 %description -n yum-dellsysid
 Libsmbios is a library and utilities that can be used by client programs to get
@@ -295,7 +302,7 @@ ln -s smbios-rbu-bios-update %{buildroot}/%{_sbindir}/dellBiosUpdate
 
 cat > files-python-smbios <<-EOF
 	%doc COPYING-GPL COPYING-OSL README
-	%{py_sitedir}/*
+	%{python_sitelib}/*
 EOF
 
 cat > files-smbios-utils-python <<-EOF
@@ -401,14 +408,25 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Mon Sep 27 2010 Matt Domsch <mdomsch@fedoraproject.org> - 2.2.26-3
+- build for Fedora 15
+
 * Wed Jul 21 2010 David Malcolm <dmalcolm@redhat.com> - 2.2.19-2
 - Rebuilt for https://fedoraproject.org/wiki/Features/Python_2.7/MassRebuild
 
-* Fri Dec 11 2009 Matt Domsch <mdomsch@fedoraproject.org> - 2.2.19-1
-- update to upstream 2.2.19
+* Fri Jul 06 2010 Michael Brown <michael-e_brown at dell.com> - 2.2.26-1
+- implement CSV export of token settings from smbios-token-ctl
 
-* Sat Jul 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.16-3.1
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+* Fri Jul 06 2010 Michael Brown <michael-e_brown at dell.com> - 2.2.25-1
+- Fix breakage resulting from improperly fixing up constructors for MemoryAccess/CmosAccess. Fixes CLI utilities.
+
+* Fri Jun 11 2010 Michael Brown <michael-e_brown at dell.com> - 2.2.23-1
+- Fixup ABI break where a couple functions that should have been exported were not marked.
+
+* Thu Jun 10 2010 Michael Brown <michael-e_brown at dell.com> - 2.2.22-1
+- Fixup bug in reading asset and service tag where it A) read checksum from wrong location and B) used wrong comparison check to validate it
+- enable service tag SET for machines that still set service tag in CMOS
+- ABI/API - change to -fvisibility=hidden for libsmbios_c.so.*, mark public api's. This removes all non-public symbols that were not formerly part of the ABI from the dynamic link table.
 
 * Mon May 18 2009 Matt Domsch <Matt_Domsch@dell.com> - 2.2.16-3
 - split yum plugin into yum-dellsysid package
