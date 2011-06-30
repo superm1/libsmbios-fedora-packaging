@@ -5,11 +5,11 @@
 # these are all substituted by autoconf
 %define major 2
 %define minor 2
-%define micro 26
+%define micro 28
 %define extra %{nil}
 %define pot_file  libsmbios
 %define lang_dom  libsmbios-2.2-x86_64
-%define release_version 2.2.26
+%define release_version 2.2.28
 
 %define release_name libsmbios
 %define other_name   libsmbios2
@@ -111,7 +111,7 @@ BuildRequires: strace libxml2-devel gcc-c++ gettext doxygen %{valgrind_BR} %{cpp
 Obsoletes: libsmbios-libs < 2.0.0
 Provides: libsmbios-libs = 0:%{version}-%{release}
 Obsoletes: %{other_name} <= 0:%{version}-%{release}
-Provides: %{other_name}  0:%{version}-%{release}
+Provides: %{other_name} = 0:%{version}-%{release}
 
 # libsmbios only ever makes sense on intel compatible arches
 # no DMI tables on ppc, s390, etc.
@@ -233,7 +233,7 @@ chmod +x ./configure
 
 mkdir -p out/libsmbios_c
 mkdir -p out/libsmbios_c++
-make %{?_smp_mflags} 2>&1 | tee build-%{_arch}.log
+make CFLAGS="-Werror" %{?_smp_mflags} 2>&1 | tee build-%{_arch}.log
 
 echo \%doc _build/build-%{_arch}.log > buildlogs.txt
 
@@ -408,6 +408,13 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Thu Jun 30 2011 Praveen K Paladugu <praveen_paladugu@dell.com> 2.2.28-4
+- Adding the right tar ball, coz files were missing from the previous version. 
+
+* Thu Jun 30 2011 Praveen K Paladugu <praveen_paladugu@dell.com> - 2.2.28-3
+- Fixing the build failure of version 2.2.26-4.
+- The updated sources adds support for the compiler version available in F15 and other fixes.
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.26-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
