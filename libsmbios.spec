@@ -99,7 +99,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -408,6 +408,9 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.28-6
+- Rebuilt for c++ ABI breakage
+
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.28-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
