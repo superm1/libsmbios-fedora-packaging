@@ -99,7 +99,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -408,6 +408,9 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.28-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.28-8
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
