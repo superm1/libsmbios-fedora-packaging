@@ -99,11 +99,12 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/libsmbios/libsmbios-%{version}/libsmbios-%{version}.tar.bz2
+Patch0: 0001-reverting-the-patch-3304b513.patch
 URL: http://linux.dell.com/libsmbios/main
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: strace libxml2-devel gcc-c++ gettext doxygen %{valgrind_BR} %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR} %{python_devel_BR}
@@ -214,6 +215,7 @@ substitutions in yum repository configuration files on Dell systems.
 : '########################################'
 : '########################################'
 %setup -q -n libsmbios-%{version}
+%patch0 -p1
 find . -type d -exec chmod -f 755 {} \;
 find doc src -type f -exec chmod -f 644 {} \;
 chmod 755 src/cppunit/*.sh
@@ -408,6 +410,10 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Tue Sep 1 2015 Srinivas G Gowda <srinivas_g_gowda@dell.com> - 2.2.28-14
+- Fixes Bug 852719: Dell Open Manage falis to start when libsmbios in EPEL branch is used.
+- Patch re-enables display of "OEM String" in smbios-sys-info-lite.
+
 * Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.28-13
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
