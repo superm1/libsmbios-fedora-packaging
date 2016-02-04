@@ -99,7 +99,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -410,6 +410,9 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.28-15
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
 * Tue Sep 1 2015 Srinivas G Gowda <srinivas_g_gowda@dell.com> - 2.2.28-14
 - Fixes Bug 852719: Dell Open Manage falis to start when libsmbios in EPEL branch is used.
 - Patch re-enables display of "OEM String" in smbios-sys-info-lite.
