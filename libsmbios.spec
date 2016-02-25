@@ -99,7 +99,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -412,6 +412,10 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Thu Feb 25 2016 Peter Jones <pjones@redhat.com> - 2.2.28-16
+- Don't complain about compilers newer than tested with in the public
+  headers.
+
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.28-15
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
