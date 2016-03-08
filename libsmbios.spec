@@ -4,12 +4,12 @@
 
 # these are all substituted by autoconf
 %define major 2
-%define minor 2
-%define micro 28
+%define minor 3
+%define micro 0
 %define extra %{nil}
 %define pot_file  libsmbios
-%define lang_dom  libsmbios-2.2-x86_64
-%define release_version 2.2.28
+%define lang_dom  libsmbios-2.3-x86_64
+%define release_version 2.3.0
 
 %define release_name libsmbios
 %define other_name   libsmbios2
@@ -99,13 +99,11 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 16%{?dist}
+Release: 1%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/libsmbios/libsmbios-%{version}/libsmbios-%{version}.tar.bz2
-Patch0: 0001-reverting-the-patch-3304b513.patch
-Patch1: 0001-Don-t-force-the-compiler-version-check-on-consumers-.patch
 URL: http://linux.dell.com/libsmbios/main
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: strace libxml2-devel gcc-c++ gettext doxygen %{valgrind_BR} %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR} %{python_devel_BR}
@@ -216,8 +214,6 @@ substitutions in yum repository configuration files on Dell systems.
 : '########################################'
 : '########################################'
 %setup -q -n libsmbios-%{version}
-%patch0 -p1
-%patch1 -p1
 find . -type d -exec chmod -f 755 {} \;
 find doc src -type f -exec chmod -f 644 {} \;
 chmod 755 src/cppunit/*.sh
@@ -280,6 +276,7 @@ cd _build
 TOPDIR=..
 make install DESTDIR=%{buildroot} INSTALL="%{__install} -p"
 mkdir -p %{buildroot}/%{_includedir}
+mkdir -p %{buildroot}/%{_bindir}
 cp -a $TOPDIR/src/include/*  %{buildroot}/%{_includedir}/
 cp -a out/public-include/*  %{buildroot}/%{_includedir}/
 rm -f %{buildroot}/%{_libdir}/lib*.{la,a}
@@ -324,6 +321,8 @@ cat > files-smbios-utils-python <<-EOF
 	%{_sbindir}/smbios-wireless-ctl
 	%{_sbindir}/smbios-rbu-bios-update
 	%{_sbindir}/smbios-lcd-brightness
+	%{_sbindir}/smbios-keyboard-ctl
+	%{_sbindir}/smbios-thermal-ctl
 	
 	# symlinks: backwards compat
 	%{_sbindir}/dellLcdBrightness
@@ -401,6 +400,8 @@ rm -rf %{buildroot}
 %{_sbindir}/smbios-get-ut-data
 %{_sbindir}/smbios-upflag-ctl
 %{_sbindir}/smbios-sys-info-lite
+%{_sbindir}/smbios-keyboard-ctl
+%{_sbindir}/smbios-thermal-ctl
 
 %files -n python-smbios -f _build/files-python-smbios
 %defattr(-,root,root,-)
