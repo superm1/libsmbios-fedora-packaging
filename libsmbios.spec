@@ -99,14 +99,15 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
 Source: http://linux.dell.com/libsmbios/download/libsmbios/libsmbios-%{version}/libsmbios-%{version}.tar.bz2
+Patch0001: 0001-Don-t-force-the-compiler-version-check-on-consumers-.patch
 URL: http://linux.dell.com/libsmbios/main
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: strace libxml2-devel gcc-c++ gettext doxygen %{valgrind_BR} %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR} %{python_devel_BR}
+BuildRequires: strace libxml2-devel gcc-c++ gettext git doxygen %{valgrind_BR} %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR} %{python_devel_BR}
 # uncomment for official fedora
 Obsoletes: libsmbios-libs < 2.0.0
 Provides: libsmbios-libs = 0:%{version}-%{release}
@@ -217,6 +218,15 @@ substitutions in yum repository configuration files on Dell systems.
 find . -type d -exec chmod -f 755 {} \;
 find doc src -type f -exec chmod -f 644 {} \;
 chmod 755 src/cppunit/*.sh
+git init
+git config user.email "%{name}-owner@fedoraproject.org"
+git config user.name "Fedora Ninjas"
+git config gc.auto 0
+git add .
+git commit -a -q -m "%{version} baseline."
+git am %{patches} </dev/null
+git config --unset user.email
+git config --unset user.name
 
 %build
 # this line lets us build an RPM directly from a git tarball
@@ -413,6 +423,13 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Wed Mar 09 2016 Peter Jones <pjones@redhat.com> - 2.3.0-2
+- Once again, don't complain about compilers newer than tested with in the
+  public headers.
+- Fix up bad %%global vs %%define directives
+- Fix up bad old changelog dates
+- Note there's a missing changelog here from the 2.3.0 rebase
+
 * Thu Feb 25 2016 Peter Jones <pjones@redhat.com> - 2.2.28-16
 - Don't complain about compilers newer than tested with in the public
   headers.
