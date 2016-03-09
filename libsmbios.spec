@@ -18,27 +18,27 @@
 %define other_name   libsmbios
 %endif
 
-%{!?build_python:   %define build_python 1}
-%{?_with_python:    %define build_python 1}
+%{!?build_python:   %global build_python 1}
+%{?_with_python:    %global build_python 1}
 %{?_without_python: %undefine build_python}
 
 # run_unit_tests not defined by default as cppunit
 # not available in OS on several major OS
 %{?_without_unit_tests: %undefine run_unit_tests}
-%{?_with_unit_tests:    %define run_unit_tests 1}
+%{?_with_unit_tests:    %global run_unit_tests 1}
 
-%{!?as_needed:         %define as_needed 1}
+%{!?as_needed:         %global as_needed 1}
 %{?_without_as_needed: %undefine as_needed}
-%{?_with_as_needed:    %define as_needed 1}
+%{?_with_as_needed:    %global as_needed 1}
 
 # some distros already have fdupes macro. If not, we just set it to something innocuous
-%{?!fdupes: %define fdupes /usr/sbin/hardlink -c -v}
+%{?!fdupes: %global fdupes /usr/sbin/hardlink -c -v}
 
-%define cppunit_BR cppunit-devel
-%define pkgconfig_BR pkgconfig
-%define ctypes_BR python-ctypes
-%define fdupes_BR hardlink
-%define valgrind_BR valgrind
+%global cppunit_BR cppunit-devel
+%global pkgconfig_BR pkgconfig
+%global ctypes_BR python-ctypes
+%global fdupes_BR hardlink
+%global valgrind_BR valgrind
 # Some variable definitions so that we can be compatible between SUSE Build service and Fedora build system
 # SUSE: fedora_version  suse_version rhel_version centos_version sles_version
 # Fedora: fedora dist fc8 fc9
@@ -46,31 +46,31 @@
 # suse/sles
 %if 0%{?suse_version}
 %if 0%{?suse_version} < 1000
-    %define valgrind_BR %{nil}
+    %global valgrind_BR %{nil}
     # sles 9 doesnt have as_needed
     %undefine as_needed
 %endif
 %if 0%{?suse_version} >= 1020
     # suse never added python-ctypes provides to python 2.5 :(
-    %define ctypes_BR %{nil}
+    %global ctypes_BR %{nil}
 %endif
 %if 0%{?suse_version} > 1020
-    %define fdupes_BR fdupes
+    %global fdupes_BR fdupes
 %else
-    %define fdupes_BR %{nil}
-    %define fdupes echo fdupes disabled
+    %global fdupes_BR %{nil}
+    %global fdupes echo fdupes disabled
 %endif
 %endif
 
 # rhel (should work on OBS and EPEL)
 %if 0%{?rhel}
 %if 0%{?rhel} < 5
-    %define fdupes echo fdupes disabled
-    %define fdupes_BR %{nil}
+    %global fdupes echo fdupes disabled
+    %global fdupes_BR %{nil}
 %endif
 %if 0%{?rhel} < 4
     # dont yet have rhel3 valgrind
-    %define valgrind_BR %{nil}
+    %global valgrind_BR %{nil}
     # no python-ctypes for python <= 2.2
     %undefine build_python
     # rhel3 doesnt have -as-needed
@@ -78,9 +78,9 @@
 %endif
 %endif
 
-%define python_devel_BR %{nil}
+%global python_devel_BR %{nil}
 %if 0%{?build_python}
-    %define python_devel_BR python-devel
+    %global python_devel_BR python-devel
     # per fedora and suse python packaging guidelines
     # suse: will define py_sitedir for us
     # fedora: use the !? code below to define when it isnt already
@@ -94,8 +94,8 @@
 %endif
 
 # if unit tests are disabled, get rid of a few BuildRequires
-%{!?run_unit_tests: %define cppunit_BR %{nil}}
-%{!?run_unit_tests: %define valgrind_BR %{nil}}
+%{!?run_unit_tests: %global cppunit_BR %{nil}}
+%{!?run_unit_tests: %global valgrind_BR %{nil}}
 
 Name: %{release_name}
 Version: %{release_version}
