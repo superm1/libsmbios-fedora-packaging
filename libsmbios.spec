@@ -467,10 +467,10 @@ rm -rf %{buildroot}
 * Wed Jul 21 2010 David Malcolm <dmalcolm@redhat.com> - 2.2.19-2
 - Rebuilt for https://fedoraproject.org/wiki/Features/Python_2.7/MassRebuild
 
-* Fri Jul 06 2010 Michael Brown <michael-e_brown at dell.com> - 2.2.26-1
+* Tue Jul 06 2010 Michael Brown <michael-e_brown at dell.com> - 2.2.26-1
 - implement CSV export of token settings from smbios-token-ctl
 
-* Fri Jul 06 2010 Michael Brown <michael-e_brown at dell.com> - 2.2.25-1
+* Tue Jul 06 2010 Michael Brown <michael-e_brown at dell.com> - 2.2.25-1
 - Fix breakage resulting from improperly fixing up constructors for MemoryAccess/CmosAccess. Fixes CLI utilities.
 
 * Fri Jun 11 2010 Michael Brown <michael-e_brown at dell.com> - 2.2.23-1
@@ -484,10 +484,10 @@ rm -rf %{buildroot}
 * Mon May 18 2009 Matt Domsch <Matt_Domsch@dell.com> - 2.2.16-3
 - split yum plugin into yum-dellsysid package
 
-* Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.16-1
+* Tue Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.16-1
 - add gcc 4.4 support
 
-* Mon Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.15-1
+* Tue Mar 24 2009 Michael E Brown <michael_e_brown at dell.com> - 2.2.15-1
 - update to lastest upstream.
 - fixes bug in bios update on systems with versions like x.y.z.
 
@@ -548,7 +548,7 @@ rm -rf %{buildroot}
   file handle when it is not needed (which is most of the time). it only
   leaves it open when it is scanning, so speed is not impacted.
 
-* Tue Aug 6 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.8
+* Mon Aug 6 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.8
 - new upstream
 
 * Tue Apr 3 2007 Michael E Brown <michael_e_brown at dell.com> - 0.13.6
