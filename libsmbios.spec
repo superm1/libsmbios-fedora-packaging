@@ -99,7 +99,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -423,6 +423,9 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Tue Jul 19 2016 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.3.0-3
+- https://fedoraproject.org/wiki/Changes/Automatic_Provides_for_Python_RPM_Packages
+
 * Wed Mar 09 2016 Peter Jones <pjones@redhat.com> - 2.3.0-2
 - Once again, don't complain about compilers newer than tested with in the
   public headers.
