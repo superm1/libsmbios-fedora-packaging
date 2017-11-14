@@ -5,11 +5,11 @@
 # these are all substituted by autoconf
 %define major 2
 %define minor 3
-%define micro 0
+%define micro 3
 %define extra %{nil}
 %define pot_file  libsmbios
 %define lang_dom  libsmbios-2.3-x86_64
-%define release_version 2.3.0
+%define release_version 2.3.3
 
 %define release_name libsmbios
 %define other_name   libsmbios2
@@ -99,15 +99,18 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 6%{?dist}
+Release: 1%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
-Source: http://linux.dell.com/libsmbios/download/libsmbios/libsmbios-%{version}/libsmbios-%{version}.tar.bz2
-Patch0001: 0001-Don-t-force-the-compiler-version-check-on-consumers-.patch
+Source: https://github.com/dell/libsmbios/archive/v%{version}/libsmbios-%{version}.tar.gz
 URL: http://linux.dell.com/libsmbios/main
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: strace libxml2-devel gcc-c++ gettext git doxygen %{valgrind_BR} %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR} %{python_devel_BR}
+BuildRequires: autoconf
+BuildRequires: automake
+BuildRequires: gettext-devel
+BuildRequires: libtool
+BuildRequires: strace libxml2-devel gcc-c++ gettext doxygen %{valgrind_BR} %{cppunit_BR} %{fdupes_BR} %{pkgconfig_BR} %{python_devel_BR}
 # uncomment for official fedora
 Obsoletes: libsmbios-libs < 2.0.0
 Provides: libsmbios-libs = 0:%{version}-%{release}
@@ -217,16 +220,7 @@ substitutions in yum repository configuration files on Dell systems.
 %setup -q -n libsmbios-%{version}
 find . -type d -exec chmod -f 755 {} \;
 find doc src -type f -exec chmod -f 644 {} \;
-chmod 755 src/cppunit/*.sh
-git init
-git config user.email "%{name}-owner@fedoraproject.org"
-git config user.name "Fedora Ninjas"
-git config gc.auto 0
-git add .
-git commit -a -q -m "%{version} baseline."
-git am %{patches} </dev/null
-git config --unset user.email
-git config --unset user.name
+find ./src/cppunit/ -name "*.sh" -type f -exec chmod 755  '{}' \;
 
 %build
 # this line lets us build an RPM directly from a git tarball
@@ -239,7 +233,8 @@ echo '../configure "$@"' > configure
 chmod +x ./configure
 
 %configure \
-    %{?!as_needed:--disable-as-needed} %{?!build_python:--disable-python}
+    %{?!as_needed:--disable-as-needed} %{?!build_python:--disable-python} \
+    --enable-libsmbios_cxx
 
 mkdir -p out/libsmbios_c
 mkdir -p out/libsmbios_c++
@@ -309,17 +304,15 @@ ln -s %{_sbindir}/dellWirelessCtl %{buildroot}/%{_bindir}/dellWirelessCtl
 ln -s smbios-sys-info %{buildroot}/%{_sbindir}/getSystemId
 ln -s smbios-wireless-ctl %{buildroot}/%{_sbindir}/dellWirelessCtl
 ln -s smbios-lcd-brightness %{buildroot}/%{_sbindir}/dellLcdBrightness
-ln -s smbios-rbu-bios-update %{buildroot}/%{_sbindir}/dellBiosUpdate
 
 cat > files-python-smbios <<-EOF
-	%doc COPYING-GPL COPYING-OSL README
+	%doc COPYING-GPL COPYING-OSL
 	%{python_sitelib}/*
 EOF
 
 cat > files-smbios-utils-python <<-EOF
-	%doc COPYING-GPL COPYING-OSL README
+	%doc COPYING-GPL COPYING-OSL
 	%doc src/bin/getopts_LICENSE.txt src/include/smbios/config/boost_LICENSE_1_0_txt
-	%doc doc/pkgheader.sh
 	%dir %{_sysconfdir}/libsmbios
 	%config(noreplace) %{_sysconfdir}/libsmbios/*
 	
@@ -329,17 +322,17 @@ cat > files-smbios-utils-python <<-EOF
 	%{_sbindir}/smbios-passwd
 	%{_sbindir}/smbios-wakeup-ctl
 	%{_sbindir}/smbios-wireless-ctl
-	%{_sbindir}/smbios-rbu-bios-update
 	%{_sbindir}/smbios-lcd-brightness
 	%{_sbindir}/smbios-keyboard-ctl
 	%{_sbindir}/smbios-thermal-ctl
+	%{_sbindir}/smbios-battery-ctl
 	
-	# symlinks: backwards compat
+	# used by HAL in old location, so keep it around until HAL is updated.
+	%{_sbindir}/dellLEDCtl
 	%{_sbindir}/dellLcdBrightness
+	%{_sbindir}/dellMediaDirectCtl
 	%{_sbindir}/getSystemId
 	%{_sbindir}/dellWirelessCtl
-	%{_sbindir}/dellBiosUpdate
-	# used by HAL in old location, so keep it around until HAL is updated.
 	%{_bindir}/dellWirelessCtl
 	
 	# data files
@@ -347,7 +340,7 @@ cat > files-smbios-utils-python <<-EOF
 EOF
 
 cat > files-yum-dellsysid <<-EOF
-	%doc COPYING-GPL COPYING-OSL README
+	%doc COPYING-GPL COPYING-OSL
 	# YUM Plugin
 	%config(noreplace) %{_sysconfdir}/yum/pluginconf.d/*
 	%{_exec_prefix}/lib/yum-plugins/*
@@ -377,7 +370,7 @@ rm -rf %{buildroot}
 
 %files -n libsmbios-devel -f _build/buildlogs.txt
 %defattr(-,root,root,-)
-%doc COPYING-GPL COPYING-OSL README src/bin/getopts_LICENSE.txt src/include/smbios/config/boost_LICENSE_1_0_txt
+%doc COPYING-GPL COPYING-OSL src/bin/getopts_LICENSE.txt src/include/smbios/config/boost_LICENSE_1_0_txt
 %{_includedir}/smbios
 %{_includedir}/smbios_c
 %{_libdir}/libsmbios.so
@@ -389,22 +382,14 @@ rm -rf %{buildroot}
 %files -n smbios-utils
 # opensuse 11.1 enforces non-empty file list :(
 %defattr(-,root,root,-)
-%doc COPYING-GPL COPYING-OSL README
+%doc COPYING-GPL COPYING-OSL
 # no other files.
 
 %files -n smbios-utils-bin
 %defattr(-,root,root,-)
-%doc COPYING-GPL COPYING-OSL README
+%doc COPYING-GPL COPYING-OSL
 %doc src/bin/getopts_LICENSE.txt src/include/smbios/config/boost_LICENSE_1_0_txt
-%doc doc/pkgheader.sh
-#
-# legacy C++
-%{_sbindir}/dellBiosUpdate-compat
-%{_sbindir}/dellLEDCtl
-%ifnarch ia64
-%{_sbindir}/dellMediaDirectCtl
-%endif
-#
+
 # new C utilities
 %{_sbindir}/smbios-state-byte-ctl
 %{_sbindir}/smbios-get-ut-data
@@ -423,6 +408,9 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Tue Nov 14 2017 Pete Walter <pwalter@fedoraproject.org> - 2.3.3-1
+- Update to 2.3.3
+
 * Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2.3.0-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
