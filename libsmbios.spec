@@ -99,7 +99,7 @@
 
 Name: %{release_name}
 Version: %{release_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+ or OSL 2.1
 Summary: Libsmbios C/C++ shared libraries
 Group: System Environment/Libraries
@@ -136,7 +136,7 @@ should use the libsmbios C interface.
 Summary: Python interface to Libsmbios C library
 Group: System Environment/Libraries
 Requires: %{release_name} = 0:%{version}-%{release}
-Requires: python %{ctypes_BR}
+Requires: python
 
 %description -n python-smbios
 This package provides a Python interface to libsmbios
@@ -408,6 +408,9 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 
 %changelog
+* Mon Dec 11 2017 Pete Walter <pwalter@fedoraproject.org> - 2.3.3-2
+- Remove obsolete python-ctypes requires (#1399686)
+
 * Tue Nov 14 2017 Pete Walter <pwalter@fedoraproject.org> - 2.3.3-1
 - Update to 2.3.3
 
